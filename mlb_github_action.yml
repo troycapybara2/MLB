@@ -1,0 +1,34 @@
+# .github/workflows/mlb_digest.yml
+# Put this in your repo at .github/workflows/mlb_digest.yml
+# Add secrets in: Settings → Secrets and variables → Actions
+
+name: MLB Daily Digest Email
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 7:00 AM ET (UTC-4 summer) — adjust to taste
+  workflow_dispatch:         # lets you trigger it manually from GitHub UI
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run MLB digest
+        env:
+          MLB_EMAIL_TO:   ${{ secrets.MLB_EMAIL_TO }}
+          MLB_EMAIL_FROM: ${{ secrets.MLB_EMAIL_FROM }}
+          MLB_SMTP_HOST:  smtp.gmail.com
+          MLB_SMTP_PORT:  587
+          MLB_SMTP_USER:  ${{ secrets.MLB_SMTP_USER }}
+          MLB_SMTP_PASS:  ${{ secrets.MLB_SMTP_PASS }}   # use Gmail App Password
+        run: python mlb_email_digest.py
